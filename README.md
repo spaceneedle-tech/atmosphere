@@ -1,4 +1,4 @@
-# atmosphere
+# Atmosphere
 
 I'ts an easy to use and extens reverse proxy based on Microsoft YARP project https://github.com/microsoft/reverse-proxy .
 
