@@ -38,7 +38,7 @@ builder.Services.AddReverseProxy()
         {
             if (builderContext.Route.AuthorizationPolicy == "jwt")
             {
-                builderContext.RequestTransforms.Add(new JwtMePathTransform(builderContext.Route.Transforms));
+                builderContext.RequestTransforms.Add(new JwtMeTransform(builderContext.Route.Transforms));
             }
         }
     });

@@ -6,13 +6,13 @@ using Yarp.ReverseProxy.Transforms;
 
 namespace Atmosphere
 {
-    public class JwtMePathTransform : RequestTransform
+    public class JwtMeTransform : RequestTransform
     {
         private readonly IReadOnlyList<IReadOnlyDictionary<string, string>> transforms;
 
         private const string subClaimType = ClaimTypes.NameIdentifier;
 
-        public JwtMePathTransform(IReadOnlyList<IReadOnlyDictionary<string, string>> transforms)
+        public JwtMeTransform(IReadOnlyList<IReadOnlyDictionary<string, string>> transforms)
         {
             this.transforms = transforms;
         }
