@@ -12,8 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - uses: actions/checkout@v3
+
     - name: Use common docker hub action
-      uses: ./../.github/actions/docker-hub.yml
+      uses: ./.github/actions/docker-hub.yml
       # with:
       #   input1: 'input value for action 1'
 
