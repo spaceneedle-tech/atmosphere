@@ -1,0 +1,42 @@
+name: Docker Hub Stable
+
+on:
+  push:
+    branches:
+      - release/stable
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use common docker hub action
+      uses: ./.github/actions/docker-hub
+      with:
+        docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        docker_hub_access_token: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+        version_file_path: ./src/Atmosphere/version.json
+    
+    - name: Verify version
+      run: |
+        if [[ "${{ env.VERSION }}" =~ ^[0-9\.]+$ ]]; then
+          echo "Version is valid"
+        else
+          echo "Invalid version"
+          exit 1
+        fi
+      
+    - name: Build the Docker image
+      run: docker build --tag ${{ vars.DOCKER_IMAGE }}:stable --tag ${{ vars.DOCKER_IMAGE }}:${{ env.VERSION }} --file ./docker/Dockerfile ./src 
+
+    - name: Push the Docker image Version
+      run: docker push ${{ vars.DOCKER_IMAGE }}:${{ env.VERSION }} 
+
+    - name: Push the Docker image Stable
+      run: docker push ${{ vars.DOCKER_IMAGE }}:stable
+    
+

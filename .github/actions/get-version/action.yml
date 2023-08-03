@@ -1,0 +1,18 @@
+name: 'Get Version'
+description: 'Get version from a project json version file'
+inputs:
+  version_file_path:
+    description: 'Path to the json version file'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Read version from version.json
+      shell: bash
+      id: read_version
+      run: |
+        echo "::set-output name=version::$(jq -r .version ${{ inputs.version_file_path }})"
+
+    - name: Set version as environment variable
+      shell: bash
+      run: echo "VERSION=${{ steps.read_version.outputs.version }}" >> $GITHUB_ENV

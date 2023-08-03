@@ -7,9 +7,9 @@ inputs:
   docker_hub_access_token:
     description: 'Docker Hub Access Token'
     required: true
-  version_file_path:
-    description: 'Path to the json version file'
-    required: true
+  # version_file_path:
+  #   description: 'Path to the json version file'
+  #   required: true
 runs:
   using: "composite"
   steps:
@@ -19,12 +19,12 @@ runs:
         username: ${{ inputs.docker_hub_username }}
         password: ${{ inputs.docker_hub_access_token }}
 
-    - name: Read version from version.json
-      shell: bash
-      id: read_version
-      run: |
-        echo "::set-output name=version::$(jq -r .version ${{ inputs.version_file_path }})"
+    # - name: Read version from version.json
+    #   shell: bash
+    #   id: read_version
+    #   run: |
+    #     echo "::set-output name=version::$(jq -r .version ${{ inputs.version_file_path }})"
 
-    - name: Set version as environment variable
-      shell: bash
-      run: echo "VERSION=${{ steps.read_version.outputs.version }}" >> $GITHUB_ENV
+    # - name: Set version as environment variable
+    #   shell: bash
+    #   run: echo "VERSION=${{ steps.read_version.outputs.version }}" >> $GITHUB_ENV

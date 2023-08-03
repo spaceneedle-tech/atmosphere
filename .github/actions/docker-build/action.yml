@@ -1,0 +1,24 @@
+name: 'Docker Build to Channel and Version tags'
+description: 'Reusable setup steps for gihub actions that push to docker hub'
+inputs:
+  docker_image:
+    description: 'Docker Image Name'
+    required: true
+  channel_tag:
+    description: 'Docker channel tag'
+    required: true
+  version_tag:
+    description: 'Docker version tag'
+    required: true
+  docker_file_path:
+    description: 'Docker file path'
+    required: true
+  source_directory:
+    description: 'Source files directory'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Build the Docker image
+      run: docker build --tag ${{ inputs.docker_image }}:${{ inputs.channel_tag }} --tag ${{ inputs.docker_image }}:${{ inputs.version_tag }} --file ${{ inputs.docker_file_path }} ${{ inputs.source_directory }} 
+
