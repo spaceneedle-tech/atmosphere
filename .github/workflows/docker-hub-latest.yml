@@ -16,8 +16,10 @@ jobs:
 
     - name: Use common docker hub action
       uses: ./.github/actions/docker-hub
-      # with:
-      #   input1: 'input value for action 1'
+      with:
+        docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        docker_hub_access_token: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+        version_file_path: ./src/Atmosphere/version.json
 
     # - uses: actions/checkout@v3
     
