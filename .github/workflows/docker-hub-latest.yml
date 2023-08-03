@@ -2,6 +2,8 @@ name: Docker Hub Latest
 
 on:
   pull_request:
+    types:
+      - closed
     branches:
       - release/latest
 
