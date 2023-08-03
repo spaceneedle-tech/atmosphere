@@ -1,6 +1,10 @@
 name: 'Get Version'
 description: 'Get version from a project json version file'
 inputs:
+  pattern:
+    description: 'The regular expression pattern to match'
+    required: true
+
   version_file_path:
     description: 'Path to the json version file'
     required: true
@@ -13,6 +17,17 @@ runs:
       run: |
         echo "::set-output name=version::$(jq -r .version ${{ inputs.version_file_path }})"
 
+    - name: Verify version
+      shell: bash
+      run: |
+        if [[ "${{ steps.read_version.outputs.version }}" =~ ${{ inputs.pattern }} ]]; then
+          echo "Version is valid"
+        else
+          echo "Invalid version"
+          exit 1
+        fi
+
     - name: Set version as environment variable
       shell: bash
       run: echo "VERSION=${{ steps.read_version.outputs.version }}" >> $GITHUB_ENV
+
