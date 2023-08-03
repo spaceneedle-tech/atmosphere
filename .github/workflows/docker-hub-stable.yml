@@ -9,7 +9,9 @@ on:
 
 jobs:
   if_merged:
+
     if: github.event.pull_request.merged == true
+    
     name: build
     runs-on: ubuntu-latest
 
@@ -21,16 +23,6 @@ jobs:
       with:
         version_file_path: ./src/Atmosphere/version.json
         pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
-    
-    # - name: Verify if it's a stable version
-    #   run: |
-    #     if [[ "${{ env.VERSION }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    #       echo "Version is valid"
-    #     else
-    #       echo "Invalid version"
-    #       exit 1
-    #     fi
-      
 
     - name: Docker Build and Push
       uses: ./.github/actions/docker-build-push

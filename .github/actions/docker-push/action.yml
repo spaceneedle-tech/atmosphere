@@ -1,18 +1,26 @@
 name: 'Docker Build to Channel and Version tags'
 description: 'Reusable setup steps for gihub actions that push to docker hub'
+
 inputs:
+
   docker_image:
     description: 'Docker Image Name'
     required: true
+
   channel_tag:
     description: 'Docker channel tag'
     required: true
+
   version_tag:
     description: 'Docker version tag'
     required: true
+
 runs:
+
   using: "composite"
+
   steps:
+  
     - name: Push the Docker image Version
       shell: bash
       run: docker push ${{ inputs.docker_image }}:${{ inputs.version_tag }} 
