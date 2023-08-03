@@ -17,15 +17,15 @@ runs:
       run: |
         echo "::set-output name=version::$(jq -r .version ${{ inputs.version_file_path }})"
 
-    - name: Echo expression
-      shell: bash
-      run: |
-          echo "${{ steps.read_version.outputs.version }}" =~ ${{ inputs.pattern }}
+    # - name: Echo expression
+    #   shell: bash
+    #   run: |
+    #       echo [[ "${{ steps.read_version.outputs.version }}" =~ ${{ inputs.pattern }} ]]
 
     - name: Verify version
       shell: bash
       run: |
-        if [[ "${{ steps.read_version.outputs.version }}" =~ ${{ inputs.pattern }} ]]; then
+        if [[ "${{ steps.read_version.outputs.version }}" =~ "${{ inputs.pattern }}"" ]]; then
           echo "Version is valid"
         else
           echo "Invalid version"
