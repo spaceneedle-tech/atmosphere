@@ -14,8 +14,10 @@ runs:
   using: "composite"
   steps:
     - name: Push the Docker image Version
+      shell: bash
       run: docker push ${{ inputs.docker_image }}:${{ inputs.version_tag }} 
 
     - name: Push the Docker image Channel
+      shell: bash
       run: docker push ${{ inputs.docker_image }}:${{ inputs.channel_tag }}
 

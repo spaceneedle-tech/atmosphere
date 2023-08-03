@@ -20,5 +20,6 @@ runs:
   using: "composite"
   steps:
     - name: Build the Docker image
+      shell: bash
       run: docker build --tag ${{ inputs.docker_image }}:${{ inputs.channel_tag }} --tag ${{ inputs.docker_image }}:${{ inputs.version_tag }} --file ${{ inputs.docker_file_path }} ${{ inputs.source_directory }} 
 
