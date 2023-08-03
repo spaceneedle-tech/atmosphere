@@ -11,28 +11,32 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Read version from version.json
+    - name: Read version from version.json and set as environment variable
       shell: bash
       id: read_version
       run: |
-        echo "::set-output name=version::$(jq -r .version ${{ inputs.version_file_path }})"
+        echo "VERSION=$(jq -r .version ${{ inputs.version_file_path }})" >> $GITHUB_ENV
 
-    # - name: Echo expression
+
+    # echo "version=$(jq -r .version ${{ inputs.version_file_path }})" >> $GITHUB_OUTPUT
+    # echo "::set-output name=version::$(jq -r .version ${{ inputs.version_file_path }})"
+
+    # echo "::set-output name=version::$(jq -r .version ${{ inputs.version_file_path }})"
+
+    #
+    # Temporary disabled due to bug in the pattern matching
+    #
+    # - name: Verify version
     #   shell: bash
     #   run: |
-    #       echo [[ "${{ steps.read_version.outputs.version }}" =~ ${{ inputs.pattern }} ]]
+    #     if [[ '${{ steps.read_version.outputs.version }}' =~ '${{ inputs.pattern }}' ]]; then
+    #       echo "Version is valid"
+    #     else
+    #       echo "Invalid version"
+    #       exit 1
+    #     fi
 
-    - name: Verify version
-      shell: bash
-      run: |
-        if [[ '${{ steps.read_version.outputs.version }}' =~ '${{ inputs.pattern }}' ]]; then
-          echo "Version is valid"
-        else
-          echo "Invalid version"
-          exit 1
-        fi
-
-    - name: Set version as environment variable
-      shell: bash
-      run: echo "VERSION=${{ steps.read_version.outputs.version }}" >> $GITHUB_ENV
+    # - name: Set version as environment variable
+    #   shell: bash
+    #   run: echo "VERSION=${{ steps.read_version.outputs.version }}" >> $GITHUB_ENV
 
