@@ -14,40 +14,42 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Use common docker hub action
+    - name: Get current project version
       uses: ./.github/actions/get-version
       with:
         version_file_path: ./src/Atmosphere/version.json
 
-    - name: Use common docker hub action
-      uses: ./.github/actions/docker-hub
+    - name: Docker Build and Push
+      uses: ./.github/actions/docker-build-push
       with:
         docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
         docker_hub_access_token: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-    
-    - name: Docker Build
-      uses: ./.github/actions/docker-build
-      with:
         docker_image: ${{ vars.DOCKER_IMAGE }}
         channel_tag: latest
         version_tag: ${{ env.VERSION }}
         docker_file_path: ./docker/Dockerfile
         source_directory: ./src
-    
-    - name: Docker Push
-      uses: ./.github/actions/docker-push
-      with:
-        docker_image: ${{ vars.DOCKER_IMAGE }}
-        channel_tag: latest
-        version_tag: ${{ env.VERSION }}
-    
-    # - name: Build the Docker image
-    #   run: docker build --tag ${{ vars.DOCKER_IMAGE }}:latest --tag ${{ vars.DOCKER_IMAGE }}:${{ env.VERSION }} --file ./docker/Dockerfile ./src 
 
-    # - name: Push the Docker image Latest
-    #   run: docker push ${{ vars.DOCKER_IMAGE }}:${{ env.VERSION }} 
-
-    # - name: Push the Docker image Latest
-    #   run: docker push ${{ vars.DOCKER_IMAGE }}:latest
+    # - name: Login to Docker Hub
+    #   uses: ./.github/actions/docker-hub
+    #   with:
+    #     docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+    #     docker_hub_access_token: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+    
+    # - name: Docker Build
+    #   uses: ./.github/actions/docker-build
+    #   with:
+    #     docker_image: ${{ vars.DOCKER_IMAGE }}
+    #     channel_tag: latest
+    #     version_tag: ${{ env.VERSION }}
+    #     docker_file_path: ./docker/Dockerfile
+    #     source_directory: ./src
+    
+    # - name: Docker Push
+    #   uses: ./.github/actions/docker-push
+    #   with:
+    #     docker_image: ${{ vars.DOCKER_IMAGE }}
+    #     channel_tag: latest
+    #     version_tag: ${{ env.VERSION }}
     
 
