@@ -20,6 +20,7 @@ runs:
         password: ${{ inputs.docker_hub_access_token }}
 
     - name: Read version from version.json
+      shell: bash
       id: read_version
       run: |
         echo "::set-output name=version::$(jq -r .version ${{ inputs.version_file_path }})"
