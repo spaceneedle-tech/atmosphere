@@ -1,5 +1,5 @@
-name: 'Setup action 1'
-description: 'Reusable setup steps for action 1'
+name: 'Docker Hub Common Setup'
+description: 'Reusable setup steps for gihub actions that push to docker hub'
 runs:
   using: "composite"
   steps:
