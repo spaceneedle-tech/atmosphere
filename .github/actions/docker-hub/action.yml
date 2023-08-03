@@ -25,4 +25,5 @@ runs:
         echo "::set-output name=version::$(jq -r .version ${{ inputs.version_file_path }})"
 
     - name: Set version as environment variable
+      shell: bash
       run: echo "VERSION=${{ steps.read_version.outputs.version }}" >> $GITHUB_ENV
