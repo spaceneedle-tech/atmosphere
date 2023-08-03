@@ -1,0 +1,23 @@
+name: 'Get Version'
+description: 'Get version from a project json version file'
+
+inputs:
+
+  pattern:
+    description: 'The regular expression pattern to match'
+    required: true
+
+  version_file_path:
+    description: 'Path to the json version file'
+    required: true
+
+runs:
+
+  using: "composite"
+
+  steps:
+    - name: Read version from version.json and set as environment variable
+      shell: bash
+      id: read_version
+      run: |
+        echo "VERSION=$(jq -r .version ${{ inputs.version_file_path }})" >> $GITHUB_ENV
