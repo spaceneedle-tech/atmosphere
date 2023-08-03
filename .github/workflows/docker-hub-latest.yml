@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - name: Use common docker hub action
-      uses: /.github/actions/docker-hub.yml
+      uses: ./../actions/docker-hub.yml
       # with:
       #   input1: 'input value for action 1'
 
