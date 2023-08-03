@@ -25,7 +25,7 @@ runs:
     - name: Verify version
       shell: bash
       run: |
-        if [[ "${{ steps.read_version.outputs.version }}" =~ "${{ inputs.pattern }}"" ]]; then
+        if [[ "${{ steps.read_version.outputs.version }}" =~ "${{ inputs.pattern }}" ]]; then
           echo "Version is valid"
         else
           echo "Invalid version"
