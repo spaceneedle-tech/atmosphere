@@ -1,11 +1,7 @@
 using Atmosphere;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
 using System.Text;
-using System.Web;
-using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,19 +26,21 @@ builder.Services.AddAuthorization(options =>
         policy.RequireAuthenticatedUser());
 });
 
-builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+var configuration = builder.Configuration.GetSection("ReverseProxy");
+
+builder.Services
+    .AddReverseProxy()
+    .LoadFromConfig(configuration)
     .AddTransforms(builderContext =>
     {
         if (!string.IsNullOrEmpty(builderContext.Route.AuthorizationPolicy))
         {
             if (builderContext.Route.AuthorizationPolicy == "jwt")
             {
-                builderContext.RequestTransforms.Add(new JwtMeTransform(builderContext.Route.Transforms));
+                builderContext.RequestTransforms.Add(new JwtTransform(builderContext, builderContext.Route));
             }
         }
     });
-
 
 var app = builder.Build();
 
@@ -51,14 +49,6 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.Use(async (context, next) =>
-{
-    await next();
-});
-
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapReverseProxy();
-});
+app.MapReverseProxy();
 
 app.Run();
