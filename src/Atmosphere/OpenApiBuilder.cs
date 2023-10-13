@@ -53,6 +53,8 @@ namespace Atmosphere
 
             var notFoundPaths = new List<IReadOnlyDictionary<string, string>>();
 
+            bool hasInsecureRoute = false;
+
             foreach (var route in routes)
             {
                 if (route.Transforms != null)
@@ -80,17 +82,23 @@ namespace Atmosphere
 
                                 JObject routeNode = JObject.Parse(openApiMatchingPath.Value.DeepClone().ToString());
 
+                                RemoveNotPresentMethods(route.Match.Methods, routeNode);
+
                                 if (route.AuthorizationPolicy != null && !string.IsNullOrEmpty(route.AuthorizationPolicy))
                                 {
-                                    AddSecurityToMethod("get", openApiMatchingPath, routeNode);
-                                    AddSecurityToMethod("post", openApiMatchingPath, routeNode);
-                                    AddSecurityToMethod("put", openApiMatchingPath, routeNode);
-                                    AddSecurityToMethod("delete", openApiMatchingPath, routeNode);
-                                    AddSecurityToMethod("patch", openApiMatchingPath, routeNode);
-                                    AddSecurityToMethod("options", openApiMatchingPath, routeNode);
-                                    AddSecurityToMethod("head", openApiMatchingPath, routeNode);
-                                    AddSecurityToMethod("connect", openApiMatchingPath, routeNode);
-                                    AddSecurityToMethod("trace", openApiMatchingPath, routeNode);
+                                    AddSecurityToMethod("get", routeNode);
+                                    AddSecurityToMethod("post", routeNode);
+                                    AddSecurityToMethod("put", routeNode);
+                                    AddSecurityToMethod("delete", routeNode);
+                                    AddSecurityToMethod("patch", routeNode);
+                                    AddSecurityToMethod("options", routeNode);
+                                    AddSecurityToMethod("head", routeNode);
+                                    AddSecurityToMethod("connect", routeNode);
+                                    AddSecurityToMethod("trace", routeNode);
+                                }
+                                else
+                                {
+                                    hasInsecureRoute = true;
                                 }
 
                                 unifiedPaths[routePattern] = routeNode;
@@ -108,9 +116,6 @@ namespace Atmosphere
                 }
             }
 
-            
-
-
             unifiedComponents["securitySchemes"] = new JObject
             {
                 ["bearerAuth"] = new JObject
@@ -127,16 +132,35 @@ namespace Atmosphere
             {
                 ["openapi"] = "3.0.0",
                 ["info"] = new JObject { ["version"] = "1.0.0", ["title"] = "Unified API" },
-                //["security"] = new JArray { new JObject { ["bearerAuth"] = new JArray() } },
                 ["paths"] = unifiedPaths,
                 ["components"] = unifiedComponents,
                 
             };
 
+            if(!hasInsecureRoute)
+            {
+                unifiedSpec["security"] = new JArray { new JObject { ["bearerAuth"] = new JArray() } };
+            }
+
             return unifiedSpec;
         }
 
-        private void AddSecurityToMethod(string methodName, JProperty prop, JObject o)
+        private void RemoveNotPresentMethods(IReadOnlyList<string>? methods,  JObject o)
+        {
+            if(methods == null || methods.Count == 0)
+            {
+                return;
+            }
+            foreach (var method in methods)
+            {
+                if (o.ContainsKey(method))
+                {
+                    o.Remove(method);
+                }
+            }
+        }
+
+        private void AddSecurityToMethod(string methodName, JObject o)
         {
             try
             {
