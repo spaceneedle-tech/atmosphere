@@ -17,7 +17,7 @@ namespace Atmosphere.Controllers
         }
 
         [HttpGet]
-        [OutputCache(Duration = 60 * 60)] // 1 hour
+        //[OutputCache(Duration = 60 * 60)] // 1 hour
         public async Task<IActionResult> Get()
         {
             var openApiSpec = await this.openApiBuilder.BuildAsync();

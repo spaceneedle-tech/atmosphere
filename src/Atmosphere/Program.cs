@@ -83,7 +83,7 @@ app.UseEndpoints(endpoints =>
 
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/.metadata/open-api", "My API V1");  // Point to your own OpenAPI json file
+    c.SwaggerEndpoint("/.metadata/open-api", $"{builder.Configuration["Info:Title"]} v{builder.Configuration["Info:Version"]}");  // Point to your own OpenAPI json file
     c.RoutePrefix = ".metadata/swagger";  // Set up the route to be '/swagger'
 });
 

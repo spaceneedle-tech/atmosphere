@@ -10,13 +10,16 @@ namespace Atmosphere
     {
         private readonly HttpClient httpClient;
         private readonly IProxyConfigProvider proxyConfigProvider;
+        private readonly IConfiguration configuration;
 
         public OpenApiBuilder(
             IHttpClientFactory httpClientFactory,
-            IProxyConfigProvider proxyConfigProvider)
+            IProxyConfigProvider proxyConfigProvider,
+            IConfiguration configuration)
         {
             this.httpClient = httpClientFactory.CreateClient();
             this.proxyConfigProvider = proxyConfigProvider;
+            this.configuration = configuration;
         }
 
         internal async Task<JObject> BuildAsync()
@@ -55,20 +58,39 @@ namespace Atmosphere
 
             bool hasInsecureRoute = false;
 
+            JToken templateRoute = null;
+
             foreach (var route in routes)
             {
                 if (route.Transforms != null)
                 {
                     var pathPattern = route.Transforms.SingleOrDefault(x => x.Keys.Contains("PathPattern"));
+                    var match = route.Match;
+                    var path = match.Path;
+                    var methods = route.Match.Methods;
+                    var metadata = route.Metadata;
+
+                    string[] tags = new string[0];
+
+                    if(metadata != null && metadata.TryGetValue("Section", out var tagsValue))
+                    {
+                        tags = new string[] { tagsValue };
+                    }
+
 
                     if (pathPattern != null)
                     {
                         var routePattern = route.Match.Path;
-
-                        var openApiMatchingPath = openApiPaths.SingleOrDefault(x => x.Name == pathPattern["PathPattern"]);
+                        var targetPattern = pathPattern["PathPattern"].Replace("{sub}", "{id}");
+                        var openApiMatchingPath = openApiPaths.SingleOrDefault(x => x.Name == targetPattern);
 
                         if (openApiMatchingPath?.Value != null)
                         {
+                           // if (templateRoute == null)
+                            //{
+                                templateRoute = openApiMatchingPath.Value;
+                           // }
+
                             try
                             {
                                 foreach (JProperty operation in openApiMatchingPath.Value.Children<JProperty>())
@@ -86,19 +108,37 @@ namespace Atmosphere
 
                                 if (route.AuthorizationPolicy != null && !string.IsNullOrEmpty(route.AuthorizationPolicy))
                                 {
-                                    AddSecurityToMethod("get", routeNode);
-                                    AddSecurityToMethod("post", routeNode);
-                                    AddSecurityToMethod("put", routeNode);
-                                    AddSecurityToMethod("delete", routeNode);
-                                    AddSecurityToMethod("patch", routeNode);
-                                    AddSecurityToMethod("options", routeNode);
-                                    AddSecurityToMethod("head", routeNode);
-                                    AddSecurityToMethod("connect", routeNode);
-                                    AddSecurityToMethod("trace", routeNode);
+                                    if (methods == null || methods.Count == 0)
+                                    {
+                                        AddSecurityToMethod("get", routeNode);
+                                        AddSecurityToMethod("post", routeNode);
+                                        AddSecurityToMethod("put", routeNode);
+                                        AddSecurityToMethod("delete", routeNode);
+                                        AddSecurityToMethod("patch", routeNode);
+                                        AddSecurityToMethod("options", routeNode);
+                                        AddSecurityToMethod("head", routeNode);
+                                        AddSecurityToMethod("connect", routeNode);
+                                        AddSecurityToMethod("trace", routeNode);
+                                    }
+                                    else
+                                    {
+                                        foreach (var method in methods)
+                                        {
+                                            AddSecurityToMethod(method.ToLower(), routeNode);
+                                        }
+                                    }
                                 }
                                 else
                                 {
                                     hasInsecureRoute = true;
+                                }
+
+                                if(tags.Length > 0)
+                                {
+                                    foreach (var item in routeNode)
+                                    {
+                                        item.Value["tags"] = new JArray(tags);
+                                    }
                                 }
 
                                 unifiedPaths[routePattern] = routeNode;
@@ -111,6 +151,57 @@ namespace Atmosphere
                         else
                         {
                             notFoundPaths.Add(pathPattern);
+
+                            templateRoute = JObject.Parse(File.ReadAllText("templateRoute.json"));
+                            /*
+                              foreach (JProperty item in templateRoute)
+                              {
+                                  //foreach (var x in item)
+                                  //{
+                                  //    var a = x;
+
+                                  //}
+                                  // Navigate to the 'parameters' array and loop through each parameter
+                                  JArray parameters = (JArray)item.Value["parameters"];
+
+                                  if (parameters != null)
+                                  {
+                                      foreach (JObject parameter in parameters)
+                                      {
+                                          // Remove the 'schema' property from each parameter
+                                          parameter.Property("schema")?.Remove();
+                                      }
+                                  }
+
+                                  // Navigate to the 'responses' object and loop through each response
+                                  JObject responses = (JObject)item.Value["responses"];
+                                  foreach (var response in responses.Properties())
+                                  {
+                                      // Directly set the 'schema' property to a new generic object schema for each response
+
+                                      if (((JObject)response.Value).ContainsKey("content"))
+                                      {
+                                          JObject content = (JObject)response.Value["content"]["application/json"];
+                                          content["schema"] = new JObject(
+                                              new JProperty("type", "object"),
+                                              new JProperty("description", "An object with no defined schema")
+                                          );
+                                      }
+                                  }
+
+                              }*/
+
+                            if (tags.Length > 0)
+                            {
+                                foreach (JProperty item in templateRoute)
+                                {
+                                    item.Value["tags"] = new JArray(tags);
+                                }
+                            }
+
+                           // var x = templateRoute.ToString();
+
+                            unifiedPaths[routePattern] = templateRoute;
                         }
                     }
                 }
@@ -131,7 +222,11 @@ namespace Atmosphere
             var unifiedSpec = new JObject
             {
                 ["openapi"] = "3.0.0",
-                ["info"] = new JObject { ["version"] = "1.0.0", ["title"] = "Unified API" },
+                ["info"] = new JObject { 
+                    ["version"] = this.configuration["Info:Version"], 
+                    ["title"] = this.configuration["Info:Title"],
+                    ["description"] = this.configuration["Info:Description"]
+                },
                 ["paths"] = unifiedPaths,
                 ["components"] = unifiedComponents,
                 
@@ -151,13 +246,31 @@ namespace Atmosphere
             {
                 return;
             }
-            foreach (var method in methods)
+
+            var keysToRemove = new HashSet<string>();
+
+            foreach (var key in o)
             {
-                if (o.ContainsKey(method))
+                if(!methods.Contains(key.Key.ToUpper()))
                 {
-                    o.Remove(method);
+                    keysToRemove.Add(key.Key);
                 }
             }
+
+            foreach (var item in keysToRemove)
+            {
+                if(o.ContainsKey(item))
+                {
+                    o.Remove(item);
+                }
+            }
+            //foreach (var method in methods)
+            //{
+            //    if (o.ContainsKey(method.ToLower()))
+            //    {
+            //        o.Remove(method);
+            //    }
+            //}
         }
 
         private void AddSecurityToMethod(string methodName, JObject o)
