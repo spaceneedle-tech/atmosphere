@@ -1,0 +1,401 @@
+{
+  "get": {
+    "tags": [
+      "All Entities"
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "description": "An object with no defined schema"
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Bad Request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "description": "An object with no defined schema"
+            }
+          }
+        }
+      }
+    }
+  },
+  "post": {
+    "tags": [
+      "All Entities"
+    ],
+    "requestBody": {
+      "content": {
+        "application/json;odata.metadata=minimal;odata.streaming=true": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=minimal;odata.streaming=false": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=minimal": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=full;odata.streaming=true": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=full;odata.streaming=false": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=full": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=none;odata.streaming=true": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=none;odata.streaming=false": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=none": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.streaming=true": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.streaming=false": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/xml": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "text/plain": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "text/json": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/*+json": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "description": "An object with no defined schema"
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Bad Request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "description": "An object with no defined schema"
+            }
+          }
+        }
+      }
+    }
+  },
+  "put": {
+    "tags": [
+      "All Entities"
+    ],
+    "requestBody": {
+      "content": {
+        "application/json;odata.metadata=minimal;odata.streaming=true": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=minimal;odata.streaming=false": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=minimal": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=full;odata.streaming=true": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=full;odata.streaming=false": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=full": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=none;odata.streaming=true": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=none;odata.streaming=false": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=none": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.streaming=true": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.streaming=false": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/xml": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "text/plain": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "text/json": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        },
+        "application/*+json": {
+          "schema": {
+            "type": "object",
+            "description": "An object with no defined schema"
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "description": "An object with no defined schema"
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Bad Request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object", "description": "An object with no defined schema"
+            }
+          }
+        }
+      }
+    }
+  },
+  "delete": {
+    "tags": [
+      "All Entities"
+    ],
+    "requestBody": {
+      "content": {
+        "application/json;odata.metadata=minimal;odata.streaming=true": {
+          "schema": {
+            "type": "object", "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=minimal;odata.streaming=false": {
+          "schema": {
+            "type": "object", "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=minimal": {
+          "schema": {
+            "type": "object", "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=full;odata.streaming=true": {
+          "schema": {
+            "type": "object", "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=full;odata.streaming=false": {
+          "schema": {
+            "type": "object", "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=full": {
+          "schema": {
+            "type": "object", "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=none;odata.streaming=true": {
+          "schema": {
+            "type": "object", "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=none;odata.streaming=false": {
+          "schema": {
+            "type": "object", "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.metadata=none": {
+          "schema": {
+            "type": "object", "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.streaming=true": {
+          "schema": {
+            "type": "object", "description": "An object with no defined schema"
+          }
+        },
+        "application/json;odata.streaming=false": {
+          "schema": {
+            "type": "object", "description": "An object with no defined schema"
+          }
+        },
+        "application/json": {
+          "schema": {
+            "type": "object", "description": "An object with no defined schema"
+          }
+        },
+        "application/xml": {
+          "schema": {
+            "type": "object", "description": "An object with no defined schema"
+          }
+        },
+        "text/plain": {
+          "schema": {
+            "type": "object", "description": "An object with no defined schema"
+          }
+        },
+        "text/json": {
+          "schema": {
+            "type": "object", "description": "An object with no defined schema"
+          }
+        },
+        "application/*+json": {
+          "schema": {
+            "type": "object", "description": "An object with no defined schema"
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "description": "An object with no defined schema"
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Bad Request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "description": "An object with no defined schema"
+            }
+          }
+        }
+      }
+    }
+  }
+}
