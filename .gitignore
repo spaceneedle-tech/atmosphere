@@ -397,3 +397,5 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /src/Atmosphere/appsettings.Development.json
+/src/Atmosphere/appsettings - Copy.Development.json
+/src/Atmosphere/appsettings - Copy (2).Development.json
