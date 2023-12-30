@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Text.Json;
 using Yarp.ReverseProxy.Configuration;
+using Yarp.ReverseProxy.Model;
 
 namespace Atmosphere
 {
@@ -58,7 +59,7 @@ namespace Atmosphere
 
             bool hasInsecureRoute = false;
 
-            JToken templateRoute = null;
+            JObject templateRoute = null;
 
             foreach (var route in routes)
             {
@@ -88,7 +89,7 @@ namespace Atmosphere
                         {
                            // if (templateRoute == null)
                             //{
-                                templateRoute = openApiMatchingPath.Value;
+                               // templateRoute = openApiMatchingPath.Value;
                            // }
 
                             try
@@ -153,6 +154,8 @@ namespace Atmosphere
                             notFoundPaths.Add(pathPattern);
 
                             templateRoute = JObject.Parse(File.ReadAllText("templateRoute.json"));
+
+                            RemoveNotPresentMethods(route.Match.Methods, templateRoute);
                             /*
                               foreach (JProperty item in templateRoute)
                               {
@@ -193,7 +196,7 @@ namespace Atmosphere
 
                             if (tags.Length > 0)
                             {
-                                foreach (JProperty item in templateRoute)
+                                foreach (JProperty item in templateRoute as JToken)
                                 {
                                     item.Value["tags"] = new JArray(tags);
                                 }
