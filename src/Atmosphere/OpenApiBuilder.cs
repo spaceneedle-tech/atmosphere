@@ -313,15 +313,51 @@ namespace Atmosphere
             {
                 var referenceSchema = reference.Replace("#/components/schemas/", "");
 
-                foreach (var openApiSchema in openApiSchemas)
+                var openApiSchema = openApiSchemas.FirstOrDefault(x => x.Name == referenceSchema);
+                if (openApiSchema != null)
                 {
-                    if (openApiSchema.Name == referenceSchema)
-                    {
-                        unifiedSchemas[referenceSchema] = openApiSchema.Value.DeepClone();
-                    }
+                    var schema = openApiSchema.Value.DeepClone();
+                    unifiedSchemas[referenceSchema] = schema;
+                    ProcessSchema(schema.Value<JObject>(), unifiedSchemas, openApiSchemas);
                 }
             }
         }
+
+        private void ProcessSchema(JObject schema, JObject unifiedSchemas, IEnumerable<JProperty> openApiSchemas)
+        {
+            foreach (var property in schema["properties"]!.Value<JObject>())
+            {
+                var type = property.Value?["type"]?.Value<string>();
+                if (type == "array")
+                {
+                    var items = property.Value["items"]!.Value<JObject>();
+                    if (items.ContainsKey("$ref"))
+                    {
+                        CloneAndAddSchema(items["$ref"]!.Value<string>(), unifiedSchemas, openApiSchemas);
+                    }
+                }
+                else if (property.Value["$ref"] != null)
+                {
+                    CloneAndAddSchema(property.Value["$ref"]!.Value<string>(), unifiedSchemas, openApiSchemas);
+                }
+            }
+        }
+
+        private void CloneAndAddSchema(string refValue, JObject unifiedSchemas, IEnumerable<JProperty> openApiSchemas)
+        {
+            var refSchema = refValue.Replace("#/components/schemas/", "");
+            if (!unifiedSchemas.ContainsKey(refSchema))
+            {
+                var schemaProperty = openApiSchemas.FirstOrDefault(x => x.Name == refSchema);
+                if (schemaProperty != null)
+                {
+                    var schema = schemaProperty.Value.DeepClone();
+                    unifiedSchemas[refSchema] = schema;
+                    ProcessSchema(schema.Value<JObject>(), unifiedSchemas, openApiSchemas); // Recursive call
+                }
+            }
+        }
+
 
         private void ExtractReferences(JToken token, HashSet<string> refValues)
         {
