@@ -73,7 +73,7 @@ namespace Atmosphere
 
                     string[] tags = new string[0];
 
-                    if(metadata != null && metadata.TryGetValue("Section", out var tagsValue))
+                    if (metadata != null && metadata.TryGetValue("Section", out var tagsValue))
                     {
                         tags = new string[] { tagsValue };
                     }
@@ -87,15 +87,15 @@ namespace Atmosphere
 
                         if (openApiMatchingPath?.Value != null)
                         {
-                           // if (templateRoute == null)
+                            // if (templateRoute == null)
                             //{
-                               // templateRoute = openApiMatchingPath.Value;
-                           // }
+                            // templateRoute = openApiMatchingPath.Value;
+                            // }
 
                             try
                             {
                                 foreach (JProperty operation in openApiMatchingPath.Value.Children<JProperty>())
-                                { 
+                                {
                                     var references = new HashSet<string>();
 
                                     this.ExtractReferences(operation.Value, references);
@@ -134,7 +134,7 @@ namespace Atmosphere
                                     hasInsecureRoute = true;
                                 }
 
-                                if(tags.Length > 0)
+                                if (tags.Length > 0)
                                 {
                                     foreach (var item in routeNode)
                                     {
@@ -202,7 +202,7 @@ namespace Atmosphere
                                 }
                             }
 
-                           // var x = templateRoute.ToString();
+                            // var x = templateRoute.ToString();
 
                             unifiedPaths[routePattern] = templateRoute;
                         }
@@ -225,17 +225,18 @@ namespace Atmosphere
             var unifiedSpec = new JObject
             {
                 ["openapi"] = "3.0.0",
-                ["info"] = new JObject { 
-                    ["version"] = this.configuration["Info:Version"], 
+                ["info"] = new JObject
+                {
+                    ["version"] = this.configuration["Info:Version"],
                     ["title"] = this.configuration["Info:Title"],
                     ["description"] = this.configuration["Info:Description"]
                 },
                 ["paths"] = unifiedPaths,
                 ["components"] = unifiedComponents,
-                
+
             };
 
-            if(!hasInsecureRoute)
+            if (!hasInsecureRoute)
             {
                 unifiedSpec["security"] = new JArray { new JObject { ["bearerAuth"] = new JArray() } };
             }
@@ -243,9 +244,9 @@ namespace Atmosphere
             return unifiedSpec;
         }
 
-        private void RemoveNotPresentMethods(IReadOnlyList<string>? methods,  JObject o)
+        private void RemoveNotPresentMethods(IReadOnlyList<string>? methods, JObject o)
         {
-            if(methods == null || methods.Count == 0)
+            if (methods == null || methods.Count == 0)
             {
                 return;
             }
@@ -254,7 +255,7 @@ namespace Atmosphere
 
             foreach (var key in o)
             {
-                if(!methods.Contains(key.Key.ToUpper()))
+                if (!methods.Contains(key.Key.ToUpper()))
                 {
                     keysToRemove.Add(key.Key);
                 }
@@ -262,7 +263,7 @@ namespace Atmosphere
 
             foreach (var item in keysToRemove)
             {
-                if(o.ContainsKey(item))
+                if (o.ContainsKey(item))
                 {
                     o.Remove(item);
                 }
@@ -280,7 +281,7 @@ namespace Atmosphere
         {
             try
             {
-                if(!o.ContainsKey(methodName))
+                if (!o.ContainsKey(methodName))
                 {
                     return;
                 }
@@ -306,14 +307,13 @@ namespace Atmosphere
             }
         }
 
-   
-        private void AddSchemas(JObject unifiedSchemas, IEnumerable<JProperty> openApiSchemas, HashSet<string> references)
+
+      private void AddSchemas(JObject unifiedSchemas, IEnumerable<JProperty> openApiSchemas, HashSet<string> references)
         {
             foreach (var reference in references)
             {
                 var referenceSchema = reference.Replace("#/components/schemas/", "");
-
-                var openApiSchema = openApiSchemas.FirstOrDefault(x => x.Name == referenceSchema);
+                var openApiSchema = openApiSchemas?.FirstOrDefault(x => x.Name == referenceSchema);
                 if (openApiSchema != null)
                 {
                     var schema = openApiSchema.Value.DeepClone();
@@ -322,46 +322,43 @@ namespace Atmosphere
                 }
             }
         }
-
+      
         private void ProcessSchema(JObject schema, JObject unifiedSchemas, IEnumerable<JProperty> openApiSchemas)
         {
-            foreach (var property in schema["properties"]!.Value<JObject>())
+            foreach (var property in schema.TryGetValue("properties", out var properties) ? properties.Value<JObject>().Properties() : Enumerable.Empty<JProperty>())
             {
-                var type = property.Value?["type"]?.Value<string>();
-                if (type == "array")
-                {
-                    var items = property.Value["items"]!.Value<JObject>();
-                    if (items.ContainsKey("$ref"))
-                    {
-                        CloneAndAddSchema(items["$ref"]!.Value<string>(), unifiedSchemas, openApiSchemas);
-                    }
-                }
-                else if (property.Value["$ref"] != null)
+                Console.WriteLine(property);
+                if (property.Value?["$ref"] != null)
                 {
                     CloneAndAddSchema(property.Value["$ref"]!.Value<string>(), unifiedSchemas, openApiSchemas);
                 }
+                var type = property.Value?["type"]?.Value<string>();
+                if (type != "array") continue;
+                var items = property.Value["items"]!.Value<JObject>();
+                if (items.ContainsKey("$ref"))
+                {
+                    CloneAndAddSchema(items["$ref"]!.Value<string>(), unifiedSchemas, openApiSchemas);
+                }
+
             }
         }
 
-        private void CloneAndAddSchema(string refValue, JObject unifiedSchemas, IEnumerable<JProperty> openApiSchemas)
+
+ private void CloneAndAddSchema(string refValue, JObject unifiedSchemas, IEnumerable<JProperty> openApiSchemas)
         {
             var refSchema = refValue.Replace("#/components/schemas/", "");
-            if (!unifiedSchemas.ContainsKey(refSchema))
-            {
-                var schemaProperty = openApiSchemas.FirstOrDefault(x => x.Name == refSchema);
-                if (schemaProperty != null)
-                {
-                    var schema = schemaProperty.Value.DeepClone();
-                    unifiedSchemas[refSchema] = schema;
-                    ProcessSchema(schema.Value<JObject>(), unifiedSchemas, openApiSchemas); // Recursive call
-                }
-            }
+            if (unifiedSchemas.ContainsKey(refSchema)) return;
+            var schemaProperty = openApiSchemas.FirstOrDefault(x => x.Name == refSchema);
+            if (schemaProperty == null) return;
+            var schema = schemaProperty.Value.DeepClone();
+            unifiedSchemas[refSchema] = schema;
+            ProcessSchema(schema.Value<JObject>(), unifiedSchemas, openApiSchemas); // Recursive call
         }
 
 
         private void ExtractReferences(JToken token, HashSet<string> refValues)
         {
-                        // Check if this token has a "$ref" property
+            // Check if this token has a "$ref" property
             JToken refValue;
 
             if (token.Type == JTokenType.Object && ((JObject)token).TryGetValue("$ref", out refValue))
