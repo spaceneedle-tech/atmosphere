@@ -308,7 +308,7 @@ namespace Atmosphere
         }
 
 
-        private void AddSchemas(JObject unifiedSchemas, IEnumerable<JProperty> openApiSchemas, HashSet<string> references)
+      private void AddSchemas(JObject unifiedSchemas, IEnumerable<JProperty> openApiSchemas, HashSet<string> references)
         {
             foreach (var reference in references)
             {
@@ -322,7 +322,7 @@ namespace Atmosphere
                 }
             }
         }
-
+      
         private void ProcessSchema(JObject schema, JObject unifiedSchemas, IEnumerable<JProperty> openApiSchemas)
         {
             foreach (var property in schema.TryGetValue("properties", out var properties) ? properties.Value<JObject>().Properties() : Enumerable.Empty<JProperty>())
@@ -343,7 +343,8 @@ namespace Atmosphere
             }
         }
 
-        private void CloneAndAddSchema(string refValue, JObject unifiedSchemas, IEnumerable<JProperty> openApiSchemas)
+
+ private void CloneAndAddSchema(string refValue, JObject unifiedSchemas, IEnumerable<JProperty> openApiSchemas)
         {
             var refSchema = refValue.Replace("#/components/schemas/", "");
             if (unifiedSchemas.ContainsKey(refSchema)) return;
