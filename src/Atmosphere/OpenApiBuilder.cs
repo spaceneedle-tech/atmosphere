@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Linq.Expressions;
 using System.Text.Json;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Model;
@@ -25,7 +26,7 @@ namespace Atmosphere
 
         internal async Task<JObject> BuildAsync()
         {
-            var openApiSpecs = new List<JObject>();
+            var openApiSpecs = new List<OpenApiSpec>();
 
             var uris = new List<string>();
 
@@ -42,14 +43,18 @@ namespace Atmosphere
             foreach (var uri in uris)
             {
                 var response = await httpClient.GetStringAsync(uri);
-                openApiSpecs.Add(JObject.Parse(response));
+                openApiSpecs.Add(new OpenApiSpec
+                {
+                    Uri = uri,
+                    Spec = JObject.Parse(response)
+                });
             }
 
             var routes = proxyConfig.Routes;
 
-            var openApiPaths = openApiSpecs.SelectMany(x => x["paths"].Children<JProperty>());
-            var openApiComponents = openApiSpecs.SelectMany(x => x["components"].Children<JProperty>());
-            var openApiSchemas = openApiSpecs.SelectMany(x => x["components"]["schemas"].Children<JProperty>());
+            var openApiPaths = openApiSpecs.Select(x => new { Spec = x, Paths = x.Spec["paths"].Children<JProperty>() });
+            var openApiComponents = openApiSpecs.Select(x => new { Spec = x, Components = x.Spec["components"].Children<JProperty>() });
+            var openApiSchemas = openApiSpecs.Select(x => new { Spec = x, Schemas = x.Spec["components"]["schemas"].Children<JProperty>() });
 
             var unifiedPaths = new JObject();
             var unifiedComponents = new JObject();
@@ -65,147 +70,188 @@ namespace Atmosphere
             {
                 if (route.Transforms != null)
                 {
-                    var pathPattern = route.Transforms.SingleOrDefault(x => x.Keys.Contains("PathPattern"));
-                    var match = route.Match;
-                    var path = match.Path;
-                    var methods = route.Match.Methods;
-                    var metadata = route.Metadata;
-
-                    string[] tags = new string[0];
-
-                    if (metadata != null && metadata.TryGetValue("Section", out var tagsValue))
+                    try
                     {
-                        tags = new string[] { tagsValue };
-                    }
+                        var pathPattern = route.Transforms.SingleOrDefault(x => x.Keys.Contains("PathPattern"));
+                        var match = route.Match;
+                        var path = match.Path;
+                        var methods = route.Match.Methods;
+                        var metadata = route.Metadata;
 
+                        string[] tags = new string[0];
 
-                    if (pathPattern != null)
-                    {
-                        var routePattern = route.Match.Path;
-                        var targetPattern = pathPattern["PathPattern"].Replace("{sub}", "{id}");
-                        var openApiMatchingPath = openApiPaths.SingleOrDefault(x => x.Name == targetPattern);
-
-                        if (openApiMatchingPath?.Value != null)
+                        if (metadata != null && metadata.TryGetValue("Section", out var tagsValue))
                         {
-                            // if (templateRoute == null)
-                            //{
-                            // templateRoute = openApiMatchingPath.Value;
-                            // }
+                            tags = new string[] { tagsValue };
+                        }
 
-                            try
+
+                        if (pathPattern != null)
+                        {
+                            var routePattern = route.Match.Path;
+                            Console.WriteLine(routePattern);
+
+                            var targetPattern = pathPattern["PathPattern"].Replace("{sub}", "{id}");
+
+                            Console.WriteLine(targetPattern);
+
+                            if(targetPattern.Contains("currencies"))
                             {
-                                foreach (JProperty operation in openApiMatchingPath.Value.Children<JProperty>())
+                                int stops = 0;
+                            }
+
+                            var currentUri = metadata != null && metadata.ContainsKey("OpenApiAddress") ? metadata["OpenApiAddress"] : null;
+
+                            var openApiMatchingPaths = openApiPaths.Where(x => x.Spec.Uri == currentUri).FirstOrDefault()?.Paths.Where(x=> x.Name == targetPattern).ToList();
+                            //var openApiMatchingPath = openApiPaths.SingleOrDefault(x => x.Name == targetPattern);
+
+                            if (openApiMatchingPaths != null)
+                            {
+
+                                foreach (var openApiMatchingPath in openApiMatchingPaths)
                                 {
-                                    var references = new HashSet<string>();
 
-                                    this.ExtractReferences(operation.Value, references);
 
-                                    this.AddSchemas(unifiedSchemas, openApiSchemas, references);
-                                }
-
-                                JObject routeNode = JObject.Parse(openApiMatchingPath.Value.DeepClone().ToString());
-
-                                RemoveNotPresentMethods(route.Match.Methods, routeNode);
-
-                                if (route.AuthorizationPolicy != null && !string.IsNullOrEmpty(route.AuthorizationPolicy))
-                                {
-                                    if (methods == null || methods.Count == 0)
+                                    if (openApiMatchingPath?.Value != null)
                                     {
-                                        AddSecurityToMethod("get", routeNode);
-                                        AddSecurityToMethod("post", routeNode);
-                                        AddSecurityToMethod("put", routeNode);
-                                        AddSecurityToMethod("delete", routeNode);
-                                        AddSecurityToMethod("patch", routeNode);
-                                        AddSecurityToMethod("options", routeNode);
-                                        AddSecurityToMethod("head", routeNode);
-                                        AddSecurityToMethod("connect", routeNode);
-                                        AddSecurityToMethod("trace", routeNode);
+                                        // if (templateRoute == null)
+                                        //{
+                                        // templateRoute = openApiMatchingPath.Value;
+                                        // }
+
+                                        try
+                                        {
+                                            foreach (JProperty operation in openApiMatchingPath.Value.Children<JProperty>())
+                                            {
+                                                var references = new HashSet<string>();
+
+                                                this.ExtractReferences(operation.Value, references);
+
+                                                this.AddSchemas(unifiedSchemas, openApiSchemas.SelectMany(x => x.Schemas), references);
+                                            }
+
+                                            JObject routeNode = JObject.Parse(openApiMatchingPath.Value.DeepClone().ToString());
+
+                                            RemoveNotPresentMethods(route.Match.Methods, routeNode);
+
+                                            if (route.AuthorizationPolicy != null && !string.IsNullOrEmpty(route.AuthorizationPolicy))
+                                            {
+                                                if (methods == null || methods.Count == 0)
+                                                {
+                                                    AddSecurityToMethod("get", routeNode);
+                                                    AddSecurityToMethod("post", routeNode);
+                                                    AddSecurityToMethod("put", routeNode);
+                                                    AddSecurityToMethod("delete", routeNode);
+                                                    AddSecurityToMethod("patch", routeNode);
+                                                    AddSecurityToMethod("options", routeNode);
+                                                    AddSecurityToMethod("head", routeNode);
+                                                    AddSecurityToMethod("connect", routeNode);
+                                                    AddSecurityToMethod("trace", routeNode);
+                                                }
+                                                else
+                                                {
+                                                    foreach (var method in methods)
+                                                    {
+                                                        AddSecurityToMethod(method.ToLower(), routeNode);
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                hasInsecureRoute = true;
+                                            }
+
+                                            if (tags.Length > 0)
+                                            {
+                                                foreach (var item in routeNode)
+                                                {
+                                                    item.Value["tags"] = new JArray(tags);
+                                                }
+                                            }
+
+                                            unifiedPaths[routePattern] = routeNode;
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            int a = 0;  // NOTE: Placeholder exception handling. You should replace this with actual logging or error handling.
+                                        }
                                     }
                                     else
                                     {
-                                        foreach (var method in methods)
+                                        notFoundPaths.Add(pathPattern);
+
+                                        templateRoute = JObject.Parse(File.ReadAllText("templateRoute.json"));
+
+                                        RemoveNotPresentMethods(route.Match.Methods, templateRoute);
+                                        /*
+                                          foreach (JProperty item in templateRoute)
+                                          {
+                                              //foreach (var x in item)
+                                              //{
+                                              //    var a = x;
+
+                                              //}
+                                              // Navigate to the 'parameters' array and loop through each parameter
+                                              JArray parameters = (JArray)item.Value["parameters"];
+
+                                              if (parameters != null)
+                                              {
+                                                  foreach (JObject parameter in parameters)
+                                                  {
+                                                      // Remove the 'schema' property from each parameter
+                                                      parameter.Property("schema")?.Remove();
+                                                  }
+                                              }
+
+                                              // Navigate to the 'responses' object and loop through each response
+                                              JObject responses = (JObject)item.Value["responses"];
+                                              foreach (var response in responses.Properties())
+                                              {
+                                                  // Directly set the 'schema' property to a new generic object schema for each response
+
+                                                  if (((JObject)response.Value).ContainsKey("content"))
+                                                  {
+                                                      JObject content = (JObject)response.Value["content"]["application/json"];
+                                                      content["schema"] = new JObject(
+                                                          new JProperty("type", "object"),
+                                                          new JProperty("description", "An object with no defined schema")
+                                                      );
+                                                  }
+                                              }
+
+                                          }*/
+
+                                        if (tags.Length > 0)
                                         {
-                                            AddSecurityToMethod(method.ToLower(), routeNode);
+                                            foreach (JProperty item in templateRoute as JToken)
+                                            {
+                                                item.Value["tags"] = new JArray(tags);
+                                            }
                                         }
+
+                                        // var x = templateRoute.ToString();
+
+                                        if (unifiedPaths.ContainsKey(routePattern))
+                                        {
+                                            unifiedPaths[routePattern] = templateRoute;
+                                        }
+                                        else
+                                        {
+                                            unifiedPaths.Add(routePattern, templateRoute);
+                                        }
+
+                                        //unifiedPaths[routePattern] = templateRoute;
                                     }
-                                }
-                                else
-                                {
-                                    hasInsecureRoute = true;
+
                                 }
 
-                                if (tags.Length > 0)
-                                {
-                                    foreach (var item in routeNode)
-                                    {
-                                        item.Value["tags"] = new JArray(tags);
-                                    }
-                                }
-
-                                unifiedPaths[routePattern] = routeNode;
-                            }
-                            catch (Exception ex)
-                            {
-                                int a = 0;  // NOTE: Placeholder exception handling. You should replace this with actual logging or error handling.
                             }
                         }
-                        else
-                        {
-                            notFoundPaths.Add(pathPattern);
 
-                            templateRoute = JObject.Parse(File.ReadAllText("templateRoute.json"));
-
-                            RemoveNotPresentMethods(route.Match.Methods, templateRoute);
-                            /*
-                              foreach (JProperty item in templateRoute)
-                              {
-                                  //foreach (var x in item)
-                                  //{
-                                  //    var a = x;
-
-                                  //}
-                                  // Navigate to the 'parameters' array and loop through each parameter
-                                  JArray parameters = (JArray)item.Value["parameters"];
-
-                                  if (parameters != null)
-                                  {
-                                      foreach (JObject parameter in parameters)
-                                      {
-                                          // Remove the 'schema' property from each parameter
-                                          parameter.Property("schema")?.Remove();
-                                      }
-                                  }
-
-                                  // Navigate to the 'responses' object and loop through each response
-                                  JObject responses = (JObject)item.Value["responses"];
-                                  foreach (var response in responses.Properties())
-                                  {
-                                      // Directly set the 'schema' property to a new generic object schema for each response
-
-                                      if (((JObject)response.Value).ContainsKey("content"))
-                                      {
-                                          JObject content = (JObject)response.Value["content"]["application/json"];
-                                          content["schema"] = new JObject(
-                                              new JProperty("type", "object"),
-                                              new JProperty("description", "An object with no defined schema")
-                                          );
-                                      }
-                                  }
-
-                              }*/
-
-                            if (tags.Length > 0)
-                            {
-                                foreach (JProperty item in templateRoute as JToken)
-                                {
-                                    item.Value["tags"] = new JArray(tags);
-                                }
-                            }
-
-                            // var x = templateRoute.ToString();
-
-                            unifiedPaths[routePattern] = templateRoute;
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        int a = 0;
                     }
                 }
             }
