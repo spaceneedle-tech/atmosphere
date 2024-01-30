@@ -1,8 +1,10 @@
 using Atmosphere;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
@@ -14,8 +16,27 @@ builder.Services.AddOutputCache();
 builder.Services.AddHttpClient();
 builder.Services.AddControllers();
 
-var key = Encoding.ASCII.GetBytes(builder.Configuration.GetSection("Jwt:Key").Value);
+//var key = Encoding.ASCII.GetBytes(builder.Configuration.GetSection("Jwt:Key").Value);
 
+
+var publicKeyString = builder.Configuration.GetSection("Jwt:PublicKey").Value;
+var privateKeyString = builder.Configuration.GetSection("Jwt:PrivateKey").Value;
+
+SecurityKey key = null;
+
+if (!string.IsNullOrEmpty(privateKeyString))
+{
+    key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(privateKeyString));
+}
+else
+{
+    byte[] publicKeyBytes = Convert.FromBase64String(publicKeyString);
+
+    var rsa = RSA.Create();
+    rsa.ImportRSAPublicKey(publicKeyBytes, out _);
+
+    key = new RsaSecurityKey(rsa);
+}
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -23,7 +44,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(key),
+            IssuerSigningKey = key,// new SymmetricSecurityKey(key),
             ValidateIssuer = true,
             ValidateAudience = false,
             ValidIssuer = builder.Configuration.GetSection("Jwt:Issuer").Value,
