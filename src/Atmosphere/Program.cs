@@ -7,6 +7,12 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Identity.Web;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Newtonsoft.Json.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,27 +24,30 @@ builder.Services.AddControllers();
 
 //var key = Encoding.ASCII.GetBytes(builder.Configuration.GetSection("Jwt:Key").Value);
 
+// verify if JWT configuration section exits
 
-var publicKeyString = builder.Configuration.GetSection("Jwt:PublicKey").Value;
-var privateKeyString = builder.Configuration.GetSection("Jwt:PrivateKey").Value;
-
-SecurityKey key = null;
-
-if (!string.IsNullOrEmpty(privateKeyString))
+if (builder.Configuration.GetSection("Jwt").Value != null)
 {
-    key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(privateKeyString));
-}
-else
-{
-    byte[] publicKeyBytes = Convert.FromBase64String(publicKeyString);
+    var publicKeyString = builder.Configuration.GetSection("Jwt:PublicKey").Value;
+    var privateKeyString = builder.Configuration.GetSection("Jwt:PrivateKey").Value;
 
-    var rsa = RSA.Create();
-    rsa.ImportRSAPublicKey(publicKeyBytes, out _);
+    SecurityKey key = null;
 
-    key = new RsaSecurityKey(rsa);
-}
+    if (!string.IsNullOrEmpty(privateKeyString))
+    {
+        key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(privateKeyString));
+    }
+    else
+    {
+        byte[] publicKeyBytes = Convert.FromBase64String(publicKeyString);
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        var rsa = RSA.Create();
+        rsa.ImportRSAPublicKey(publicKeyBytes, out _);
+
+        key = new RsaSecurityKey(rsa);
+    }
+
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -51,11 +60,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization(options =>
+    builder.Services.AddAuthorization(options =>
+    {
+        options.AddPolicy("jwt", policy =>
+            policy.RequireAuthenticatedUser());
+    });
+}
+
+if (builder.Configuration.GetSection("Entra").Value != null)
 {
-    options.AddPolicy("jwt", policy =>
-        policy.RequireAuthenticatedUser());
-});
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration, "Entra");
+}
+
+
+
 
 var configuration = builder.Configuration.GetSection("ReverseProxy");
 
