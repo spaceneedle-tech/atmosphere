@@ -22,12 +22,12 @@ builder.Services.AddOutputCache();
 builder.Services.AddHttpClient();
 builder.Services.AddControllers();
 
-//var key = Encoding.ASCII.GetBytes(builder.Configuration.GetSection("Jwt:Key").Value);
+bool shouldAddJwtPolicy = false;
 
-// verify if JWT configuration section exits
-
-if (builder.Configuration.GetSection("Jwt").Value != null)
+if (builder.Configuration.GetSection("Jwt").GetChildren().Count() > 0)
 {
+    shouldAddJwtPolicy = true;
+
     var publicKeyString = builder.Configuration.GetSection("Jwt:PublicKey").Value;
     var privateKeyString = builder.Configuration.GetSection("Jwt:PrivateKey").Value;
 
@@ -58,22 +58,25 @@ if (builder.Configuration.GetSection("Jwt").Value != null)
             ValidateAudience = false,
             ValidIssuer = builder.Configuration.GetSection("Jwt:Issuer").Value,
         };
-    });
+    });    
+}
 
+if (builder.Configuration.GetSection("Entra").GetChildren().Count() > 0)
+{
+    shouldAddJwtPolicy = true;
+
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration, "Entra");
+}
+
+if (shouldAddJwtPolicy)
+{
     builder.Services.AddAuthorization(options =>
     {
         options.AddPolicy("jwt", policy =>
             policy.RequireAuthenticatedUser());
     });
 }
-
-if (builder.Configuration.GetSection("Entra").Value != null)
-{
-    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration, "Entra");
-}
-
-
 
 
 var configuration = builder.Configuration.GetSection("ReverseProxy");

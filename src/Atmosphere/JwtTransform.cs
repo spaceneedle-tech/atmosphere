@@ -26,6 +26,11 @@ namespace Atmosphere
         {
             if (context.HttpContext.User.Identity is ClaimsIdentity identity && identity.IsAuthenticated)
             {
+                if(this.transforms == null)
+                {
+                    return;
+                }
+
                 var claims = new Dictionary<string, string>();
 
                 foreach (var claim in identity.Claims)
@@ -39,6 +44,12 @@ namespace Atmosphere
                 if(!claims.ContainsKey("sub"))
                 {
                     claims.Add("sub", this.GetSub(identity.Claims));
+                }
+
+                if(!claims.ContainsKey("Authorization") && 
+                    context.HttpContext.Request.Headers.ContainsKey("Authorization"))
+                {
+                    claims.Add("Authorization", context.HttpContext.Request.Headers["Authorization"]);
                 }
 
                 foreach (var transform in this.transforms)
