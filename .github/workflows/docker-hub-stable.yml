@@ -32,7 +32,7 @@ jobs:
         docker_image: ${{ vars.DOCKER_IMAGE }}
         channel_tag: stable
         version_tag: ${{ env.VERSION }}
-        docker_file_path: ./docker/Dockerfile
+        docker_file_path: ./.docker/Dockerfile
         source_directory: ./src
     
 
