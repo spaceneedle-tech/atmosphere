@@ -34,5 +34,3 @@ jobs:
         version_tag: ${{ env.VERSION }}
         docker_file_path: ./.docker/Dockerfile
         source_directory: .
-    
-
