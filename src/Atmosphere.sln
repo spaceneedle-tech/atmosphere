@@ -7,7 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atmosphere", "Atmosphere\At
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docker", ".docker", "{299DDCEB-2026-43B0-8006-5E1F301865E1}"
 	ProjectSection(SolutionItems) = preProject
+		..\.docker\build.bat = ..\.docker\build.bat
+		..\.docker\build.sh = ..\.docker\build.sh
+		..\.docker\deploy.bat = ..\.docker\deploy.bat
+		..\.docker\deploy.sh = ..\.docker\deploy.sh
 		..\.docker\Dockerfile = ..\.docker\Dockerfile
+		..\.docker\run.bat = ..\.docker\run.bat
+		..\.docker\run.sh = ..\.docker\run.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{89565889-DF4D-4135-BB51-A2BD22880214}"

@@ -33,6 +33,6 @@ jobs:
         channel_tag: stable
         version_tag: ${{ env.VERSION }}
         docker_file_path: ./.docker/Dockerfile
-        source_directory: ./src
+        source_directory: .
     
 
