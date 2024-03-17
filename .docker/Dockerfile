@@ -13,11 +13,10 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0-jammy AS build
 
 ARG APP_NAME
 
-
 WORKDIR /
 COPY . .
 
-RUN dotnet build /src/${APP_NAME}/${APP_NAME}.csproj -c Release -o ${APP_DIR}/build
+RUN dotnet build /src/${APP_NAME}/${APP_NAME}.csproj -c Release -o /app/build
 
 FROM build AS publish
 
