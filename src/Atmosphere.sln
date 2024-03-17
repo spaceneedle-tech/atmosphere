@@ -3,7 +3,47 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33318.248
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atmosphere", "Atmosphere\Atmosphere.csproj", "{709A77C4-AE80-4D7A-A0E3-8FCC35358D8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atmosphere", "Atmosphere\Atmosphere.csproj", "{709A77C4-AE80-4D7A-A0E3-8FCC35358D8D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docker", ".docker", "{299DDCEB-2026-43B0-8006-5E1F301865E1}"
+	ProjectSection(SolutionItems) = preProject
+		..\.docker\Dockerfile = ..\.docker\Dockerfile
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{89565889-DF4D-4135-BB51-A2BD22880214}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{D95087F1-404E-47DF-8FDA-CD0EC0712D0C}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\workflows\docker-hub-latest.yml = ..\.github\workflows\docker-hub-latest.yml
+		..\.github\workflows\docker-hub-stable.yml = ..\.github\workflows\docker-hub-stable.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "actions", "actions", "{DA0CDB0E-611E-4AE4-A0C6-4EE2D1518FB5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker-build", "docker-build", "{026E9BEF-4E09-4226-9A12-93E388F749BB}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\actions\docker-build\action.yml = ..\.github\actions\docker-build\action.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker-build-push", "docker-build-push", "{ED400F77-DA9B-4A55-9795-73AD31A9AEDE}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\actions\docker-build-push\action.yml = ..\.github\actions\docker-build-push\action.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker-login", "docker-login", "{1DA01A3B-E951-4D72-BA59-A5A4ADF910F8}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\actions\docker-login\action.yml = ..\.github\actions\docker-login\action.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker-push", "docker-push", "{15C0E79F-F0EB-46A9-A950-8C43C5A06601}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\actions\docker-push\action.yml = ..\.github\actions\docker-push\action.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "get-version", "get-version", "{6F929EC6-41F5-410A-AB90-AA148C841301}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\actions\get-version\action.yml = ..\.github\actions\get-version\action.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,6 +58,15 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D95087F1-404E-47DF-8FDA-CD0EC0712D0C} = {89565889-DF4D-4135-BB51-A2BD22880214}
+		{DA0CDB0E-611E-4AE4-A0C6-4EE2D1518FB5} = {89565889-DF4D-4135-BB51-A2BD22880214}
+		{026E9BEF-4E09-4226-9A12-93E388F749BB} = {DA0CDB0E-611E-4AE4-A0C6-4EE2D1518FB5}
+		{ED400F77-DA9B-4A55-9795-73AD31A9AEDE} = {DA0CDB0E-611E-4AE4-A0C6-4EE2D1518FB5}
+		{1DA01A3B-E951-4D72-BA59-A5A4ADF910F8} = {DA0CDB0E-611E-4AE4-A0C6-4EE2D1518FB5}
+		{15C0E79F-F0EB-46A9-A950-8C43C5A06601} = {DA0CDB0E-611E-4AE4-A0C6-4EE2D1518FB5}
+		{6F929EC6-41F5-410A-AB90-AA148C841301} = {DA0CDB0E-611E-4AE4-A0C6-4EE2D1518FB5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8D34689A-D8B8-4EFC-A6F4-ED4764CF9CC6}
