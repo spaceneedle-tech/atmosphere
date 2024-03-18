@@ -14,6 +14,7 @@ namespace Atmosphere
         private readonly IReadOnlyList<IReadOnlyDictionary<string, string>> transforms;
 
         private const string subClaimType = ClaimTypes.NameIdentifier;
+        private const string oidClaimType = "http://schemas.microsoft.com/identity/claims/objectidentifier";
 
         public JwtTransform(TransformBuilderContext builderContext, RouteConfig route)
         {
@@ -46,7 +47,12 @@ namespace Atmosphere
                     claims.Add("sub", this.GetSub(identity.Claims));
                 }
 
-                if(!claims.ContainsKey("Authorization") && 
+                if (!claims.ContainsKey("oid"))
+                {
+                    claims.Add("oid", this.GetOid(identity.Claims));
+                }
+
+                if (!claims.ContainsKey("Authorization") && 
                     context.HttpContext.Request.Headers.ContainsKey("Authorization"))
                 {
                     claims.Add("Authorization", context.HttpContext.Request.Headers["Authorization"]);
@@ -193,6 +199,11 @@ namespace Atmosphere
         private string GetSub(IEnumerable<Claim> claims)
         {
             return claims.FirstOrDefault(c => c.Type == subClaimType)?.Value;
+        }
+
+        private string GetOid(IEnumerable<Claim> claims)
+        {
+            return claims.FirstOrDefault(c => c.Type == oidClaimType)?.Value;
         }
     }
 }
