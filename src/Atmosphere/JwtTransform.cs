@@ -52,6 +52,11 @@ namespace Atmosphere
                     claims.Add("oid", this.GetOid(identity.Claims));
                 }
 
+                if (!claims.ContainsKey("email"))
+                {
+                    claims.Add("email", this.GetEmail(identity.Claims));
+                }
+
                 if (!claims.ContainsKey("Authorization") && 
                     context.HttpContext.Request.Headers.ContainsKey("Authorization"))
                 {
@@ -204,6 +209,11 @@ namespace Atmosphere
         private string GetOid(IEnumerable<Claim> claims)
         {
             return claims.FirstOrDefault(c => c.Type == oidClaimType)?.Value;
+        }
+
+        private string GetEmail(IEnumerable<Claim> claims)
+        {
+            return claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
         }
     }
 }
