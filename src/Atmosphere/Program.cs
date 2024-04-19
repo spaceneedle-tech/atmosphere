@@ -61,6 +61,11 @@ if (builder.Configuration.GetSection("Jwt").GetChildren().Count() > 0)
     });    
 }
 
+if (builder.Configuration.GetSection("ApplicationInsights").GetChildren().Count() > 0)
+{
+    builder.Services.AddApplicationInsightsTelemetry();
+}
+
 if (builder.Configuration.GetSection("Entra").GetChildren().Count() > 0)
 {
     shouldAddJwtPolicy = true;
