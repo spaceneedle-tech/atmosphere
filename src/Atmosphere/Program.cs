@@ -1,18 +1,10 @@
 using Atmosphere;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Identity.Web;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Newtonsoft.Json.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,8 +13,11 @@ builder.Services.AddScoped<OpenApiBuilder>();
 builder.Services.AddOutputCache();
 builder.Services.AddHttpClient();
 builder.Services.AddControllers();
+builder.Services.AddApplicationInsightsTelemetry();
 
 bool shouldAddJwtPolicy = false;
+
+
 
 if (builder.Configuration.GetSection("Jwt").GetChildren().Count() > 0)
 {
@@ -61,10 +56,7 @@ if (builder.Configuration.GetSection("Jwt").GetChildren().Count() > 0)
     });    
 }
 
-if (builder.Configuration.GetSection("ApplicationInsights").GetChildren().Count() > 0)
-{
-    builder.Services.AddApplicationInsightsTelemetry();
-}
+
 
 if (builder.Configuration.GetSection("Entra").GetChildren().Count() > 0)
 {
@@ -106,6 +98,11 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+if (builder.Configuration.GetSection("ApiKeys").GetChildren().Count() > 0)
+{
+    app.UseMiddleware<ApiKeyMiddleware>();
+}
 
 app.UseRouting();
 
