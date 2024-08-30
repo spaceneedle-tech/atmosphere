@@ -23,6 +23,12 @@ public class ApiKeyMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
+        if (context.Request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
+        {
+            await this.next(context);
+            return;
+        }
+
         string extractedApiKey = string.Empty;
 
         if (context.Request.Headers.TryGetValue(this.headerName, out var headerApiKey))
