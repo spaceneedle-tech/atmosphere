@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - release/latest
-  pull_request:
-    types:
-      - closed
-    branches:
-      - release/latest
 
 jobs:
   if_merged:
