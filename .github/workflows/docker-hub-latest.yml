@@ -6,25 +6,26 @@ on:
       - release/latest
 
 jobs:
-  name: build
-  runs-on: ubuntu-latest
-  
-  steps:
-  - uses: actions/checkout@v3
-  
-  - name: Get current project version
-    uses: ./.github/actions/get-version
-    with:
-      version_file_path: ./src/Atmosphere/version.json
-      pattern: '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z\-\.]+)?$'
-  
-  - name: Docker Build and Push
-    uses: ./.github/actions/docker-build-push
-    with:
-      docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-      docker_hub_access_token: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      docker_image: ${{ vars.DOCKER_IMAGE }}
-      channel_tag: latest
-      version_tag: ${{ env.VERSION }}
-      docker_file_path: ./.docker/Dockerfile
-      source_directory: .
+  build:  # This is the key identifying the job
+    name: Build  # The name of the job is now under this key
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Get current project version
+        uses: ./.github/actions/get-version
+        with:
+          version_file_path: ./src/Atmosphere/version.json
+          pattern: '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z\-\.]+)?$'
+      
+      - name: Docker Build and Push
+        uses: ./.github/actions/docker-build-push
+        with:
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          docker_hub_access_token: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          docker_image: ${{ vars.DOCKER_IMAGE }}
+          channel_tag: latest
+          version_tag: ${{ env.VERSION }}
+          docker_file_path: ./.docker/Dockerfile
+          source_directory: .
