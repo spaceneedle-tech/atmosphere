@@ -17,8 +17,6 @@ builder.Services.AddApplicationInsightsTelemetry();
 
 bool shouldAddJwtPolicy = false;
 
-
-
 if (builder.Configuration.GetSection("Jwt").GetChildren().Count() > 0)
 {
     shouldAddJwtPolicy = true;
@@ -48,7 +46,7 @@ if (builder.Configuration.GetSection("Jwt").GetChildren().Count() > 0)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = key,// new SymmetricSecurityKey(key),
+            IssuerSigningKey = key,
             ValidateIssuer = true,
             ValidateAudience = false,
             ValidIssuer = builder.Configuration.GetSection("Jwt:Issuer").Value,
@@ -64,15 +62,48 @@ if (builder.Configuration.GetSection("Entra").GetChildren().Count() > 0)
     .AddMicrosoftIdentityWebApi(builder.Configuration, "Entra");
 }
 
+if (builder.Configuration.GetSection("Cognito").GetChildren().Count() > 0)
+{
+    shouldAddJwtPolicy = true;
+
+    var region = builder.Configuration["Cognito:Region"];
+    var userPoolId = builder.Configuration["Cognito:UserPoolId"];
+    var clientId = builder.Configuration["Cognito:ClientId"];
+
+    var authority = $"https://cognito-idp.{region}.amazonaws.com/{userPoolId}";
+
+    builder.Services
+        .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer("Cognito", options =>
+        {
+            options.Authority = authority;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = authority,
+                ValidateAudience = true,
+                ValidAudience = clientId,
+                ValidateLifetime = true,
+            };
+        });
+}
+
 if (shouldAddJwtPolicy)
 {
     builder.Services.AddAuthorization(options =>
     {
-        options.AddPolicy("jwt", policy =>
-            policy.RequireAuthenticatedUser());
+        if (builder.Configuration.GetSection("Cognito").GetChildren().Count() > 0)
+        {
+            options.AddPolicy("jwt", policy =>
+                policy.RequireAuthenticatedUser()
+                      .AddAuthenticationSchemes("Cognito"));
+        }
+        else
+        {
+            options.AddPolicy("jwt", policy =>
+                policy.RequireAuthenticatedUser();
     });
 }
-
 
 var configuration = builder.Configuration.GetSection("ReverseProxy");
 
@@ -113,10 +144,7 @@ app.UseEndpoints(endpoints =>
 {
     //endpoints.Map("/test", async (context) =>
     //{
-
-
     //    await context.Response.WriteAsync("This is the custom logic endpoint.");
-
     //});
     endpoints.MapControllers();
     endpoints.MapReverseProxy();
@@ -126,10 +154,8 @@ app.UseEndpoints(endpoints =>
 
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/.metadata/open-api", $"{builder.Configuration["Info:Title"]} v{builder.Configuration["Info:Version"]}");  // Point to your own OpenAPI json file
-    c.RoutePrefix = ".metadata/swagger";  // Set up the route to be '/swagger'
+    c.SwaggerEndpoint("/.metadata/open-api", $"{builder.Configuration["Info:Title"]} v{builder.Configuration["Info:Version"]}");
+    c.RoutePrefix = ".metadata/swagger";
 });
-
-
 
 app.Run();
