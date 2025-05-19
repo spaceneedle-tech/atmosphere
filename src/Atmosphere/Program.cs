@@ -100,8 +100,7 @@ if (shouldAddJwtPolicy)
         }
         else
         {
-            options.AddPolicy("jwt", policy =>
-                policy.RequireAuthenticatedUser();
+            options.AddPolicy("jwt", policy => policy.RequireAuthenticatedUser());
         }
 
     });
