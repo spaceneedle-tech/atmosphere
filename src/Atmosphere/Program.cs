@@ -59,7 +59,31 @@ if (builder.Configuration.GetSection("Entra").GetChildren().Count() > 0)
     shouldAddJwtPolicy = true;
 
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration, "Entra");
+        .AddMicrosoftIdentityWebApi(builder.Configuration, "Entra");
+
+    // CIAM usa endpoint v2.0 com issuer diferente do endpoint padrao.
+    // O AddMicrosoftIdentityWebApi usa authority sem /v2.0, mas os tokens CIAM
+    // sao emitidos com issuer que inclui /v2.0. Forcamos o MetadataAddress correto.
+    //
+    // Problema adicional: Microsoft.Identity.Web 1.x espera JwtSecurityToken (handler antigo),
+    // mas .NET 8 usa JsonWebTokenHandler por padrao que produz JsonWebToken.
+    // UseSecurityTokenValidators=true forca o JwtSecurityTokenHandler antigo.
+    var entraConfig = builder.Configuration.GetSection("Entra");
+    var ciamAuthority = $"{entraConfig["Instance"]}{entraConfig["TenantId"]}/v2.0";
+    builder.Services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+    {
+        options.MetadataAddress = $"{ciamAuthority}/.well-known/openid-configuration";
+        options.Authority = ciamAuthority;
+        options.UseSecurityTokenValidators = true;
+        options.TokenValidationParameters.ValidIssuers = new[] { ciamAuthority };
+        options.TokenValidationParameters.IssuerValidator = (issuer, token, parameters) =>
+        {
+            if (parameters.ValidIssuers != null && parameters.ValidIssuers.Contains(issuer))
+                return issuer;
+            throw new Microsoft.IdentityModel.Tokens.SecurityTokenInvalidIssuerException(
+                $"Invalid Issuer '{issuer}'. Expected: {ciamAuthority}");
+        };
+    });
 }
 
 if (builder.Configuration.GetSection("Cognito").GetChildren().Count() > 0)
